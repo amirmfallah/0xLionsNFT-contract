@@ -9,8 +9,8 @@ const ganache = require("ganache");
 const MNEMONIC = process.env.MNEMONIC;
 const API_KEY = process.env.NODE_KEY;
 
-const NFT_CONTRACT_ADDRESS = "0xa12e246d3A178DB0e9dBD7D3191e7Bf7a2BCA5a1";
-const OWNER_ADDRESS = "0xA2fBbffA2Cd06667AE0327d56C358D07f361d3e3";
+const NFT_CONTRACT_ADDRESS = "0x7574E84917e1EaD721AF5Fad666E2C0bf2439Bf1";
+const OWNER_ADDRESS = "0x4e034e28EE16341D5B69634488A44949b6E87c26";
 const MUMBAI = `https://rpc-mumbai.maticvigil.com/v1/${API_KEY}`;
 const MATIC = `https://rpc-mainnet.maticvigil.com/v1/${API_KEY}`;
 const rink = "https://rinkeby.infura.io/v3/eff0770e240c478bac80351b31dd5e97";
@@ -27,8 +27,11 @@ async function test() {
   try {
     //*define web3, contract and wallet instances
     //const provider = new HDWalletProvider(MNEMONIC, MUMBAI);
-    const provider = new HDWalletProvider(MNEMONIC, rink);
-
+    //const provider = new HDWalletProvider(MNEMONIC, rink);
+    const provider = new HDWalletProvider(
+      "cf2b9e0896e9d112de381922ab4c386e727df7ca9b6fe52f01923d46a555426e",
+      "http://127.0.0.1:8545"
+    );
     const web3Instance = new web3(provider);
     //const web3Instance = new web3("http://127.0.0.1:8545");
     const nftContract = new web3Instance.eth.Contract(
@@ -52,7 +55,7 @@ async function test() {
 
     //* just mint
     await nftContract.methods
-      .tokenURI(0)
+      .tokenURI(17)
       .call()
       .then((res) => {
         console.log(res);

@@ -6,23 +6,29 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract XLionsV1 is ERC721A, Ownable {
     using Strings for uint256;
-    string public baseTokenURI;
 
     // Constants
     uint256 public TOTAL_SUPPLY = 10000;
     uint256 public MINT_PRICE = 0.02 ether;
     uint256 public FREE_ITEMS_COUNT = 1000;
-    string  public uriSuffix = "";
+    uint256 public MAX_IN_TRX = 20;
+    address payable withdrawTo = payable(0xCc92F5DA26f156681fa6EeE8E63BfEEc605D228f);
 
-    constructor() ERC721A("0xLionsV1", "XLS1") {
-        baseTokenURI = "https://api.mint0xDoodles.xyz/metadata/";
+    // Variables
+    string public baseTokenURI;
+    string  public uriSuffix = "";
+    bool public paused = false;
+
+
+    constructor(string memory _initBaseURI) ERC721A("0xLions V1", "XLS1") {
+        setBaseTokenURI(_initBaseURI);
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
         return baseTokenURI;
     }
 
-    function setBaseTokenURI(string memory _baseTokenURI) external onlyOwner {
+    function setBaseTokenURI(string memory _baseTokenURI) public onlyOwner {
         baseTokenURI = _baseTokenURI;
     }
 
@@ -45,21 +51,17 @@ contract XLionsV1 is ERC721A, Ownable {
 
     function mintItem(uint256 quantity) external payable {
         uint256 supply = totalSupply();
-        require((quantity > 0) && (quantity <= 10), "Invalid quantity.");
-        require(supply + quantity - 1 <= TOTAL_SUPPLY, "Exceeds maximum supply");
-        require(
-            (supply + quantity - 1 <= FREE_ITEMS_COUNT) ||
-                (msg.value >= MINT_PRICE * quantity),
-            "Not enough supply."
-        );
+        require(!paused, "Minting is paused.");
+        require((quantity > 0) && (quantity <= MAX_IN_TRX), "Invalid quantity.");
+        require(supply + quantity - 1 <= TOTAL_SUPPLY, "Exceeds maximum supply.");
+
+        if (msg.sender != owner()) {
+            require((supply + quantity - 1 <= FREE_ITEMS_COUNT) || (msg.value >= MINT_PRICE * quantity), "Not enough supply.");
+        }
+
         _safeMint(msg.sender, quantity);
     }
 
-    function claimByOwner(uint256 quantity) external payable onlyOwner {
-        uint256 supply = totalSupply();
-        require(supply + quantity - 1 <= TOTAL_SUPPLY, "Exceeds maximum supply");
-        _safeMint(msg.sender, quantity);
-    }
 
     function mintTo(address to,uint256 quantity) external payable onlyOwner{
         uint256 supply = totalSupply();
@@ -67,28 +69,8 @@ contract XLionsV1 is ERC721A, Ownable {
         _safeMint(to, quantity);
     }
 
-    function withdraw() external virtual onlyOwner {
-        address payable ownerAddr = payable(owner());
-        require(ownerAddr.send(address(this).balance));
-    }
-
-    function withdrawLegacy() external onlyOwner {
-        address payable owner = payable(owner());
-        owner.transfer(address(this).balance);
-    }
-
-    function withdrawLegacy(uint256 _amount) external onlyOwner {
-        address payable owner = payable(owner());
-        owner.transfer(_amount);
-    }
-
-    function withdrawLips() public payable onlyOwner {
-        (bool os, ) = payable(owner()).call{value: address(this).balance}("");
-        require(os);
-    }
-
-    function withdrawLips(uint256 _amount) external onlyOwner {
-        (bool os, ) = payable(owner()).call{value: _amount}("");
+    function withdraw() public payable onlyOwner {
+        (bool os, ) = withdrawTo.call{value: address(this).balance}("");
         require(os);
     }
 
@@ -100,7 +82,15 @@ contract XLionsV1 is ERC721A, Ownable {
         FREE_ITEMS_COUNT = _count;
     }
 
+    function setMaxInTRX(uint256 _total) public onlyOwner {
+        MAX_IN_TRX = _total;
+    }
+
     function setmaxMintAmount(uint256 _count) public onlyOwner {
         TOTAL_SUPPLY = _count;
+    }
+
+    function pause(bool _state) public onlyOwner {
+        paused = _state;
     }
 }
