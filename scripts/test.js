@@ -9,7 +9,7 @@ const ganache = require("ganache");
 const MNEMONIC = process.env.MNEMONIC;
 const API_KEY = process.env.NODE_KEY;
 
-const NFT_CONTRACT_ADDRESS = "0x7574E84917e1EaD721AF5Fad666E2C0bf2439Bf1";
+const NFT_CONTRACT_ADDRESS = "0x17c39711565c5874344b7b8eccF022373dc6FBed";
 const OWNER_ADDRESS = "0x4e034e28EE16341D5B69634488A44949b6E87c26";
 const MUMBAI = `https://rpc-mumbai.maticvigil.com/v1/${API_KEY}`;
 const MATIC = `https://rpc-mainnet.maticvigil.com/v1/${API_KEY}`;
@@ -55,7 +55,7 @@ async function test() {
 
     //* just mint
     await nftContract.methods
-      .tokenURI(17)
+      .tokenURI(1001)
       .call()
       .then((res) => {
         console.log(res);

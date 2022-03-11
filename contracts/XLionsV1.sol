@@ -12,7 +12,7 @@ contract XLionsV1 is ERC721A, Ownable {
     uint256 public MINT_PRICE = 0.02 ether;
     uint256 public FREE_ITEMS_COUNT = 1000;
     uint256 public MAX_IN_TRX = 20;
-    address payable withdrawTo = payable(0xCc92F5DA26f156681fa6EeE8E63BfEEc605D228f);
+    address payable withdrawTo = payable(0xa9761566dde9C3877629726D9b7882fe98F940cb);
 
     // Variables
     string public baseTokenURI;
@@ -53,10 +53,10 @@ contract XLionsV1 is ERC721A, Ownable {
         uint256 supply = totalSupply();
         require(!paused, "Minting is paused.");
         require((quantity > 0) && (quantity <= MAX_IN_TRX), "Invalid quantity.");
-        require(supply + quantity - 1 <= TOTAL_SUPPLY, "Exceeds maximum supply.");
+        require(supply + quantity <= TOTAL_SUPPLY, "Exceeds maximum supply.");
 
         if (msg.sender != owner()) {
-            require((supply + quantity - 1 <= FREE_ITEMS_COUNT) || (msg.value >= MINT_PRICE * quantity), "Not enough supply.");
+            require((supply + quantity <= FREE_ITEMS_COUNT) || (msg.value >= MINT_PRICE * quantity), "Not enough supply.");
         }
 
         _safeMint(msg.sender, quantity);
