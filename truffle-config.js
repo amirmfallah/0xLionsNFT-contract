@@ -43,7 +43,7 @@ module.exports = {
     mumbai: {
       provider: function () {
         return new HDWalletProvider(
-          MNEMONIC,
+          process.env.MNEMONIC,
           `https://rpc-mumbai.maticvigil.com/v1/${API_KEY}`
         );
       },
@@ -67,11 +67,12 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           process.env.MAIN,
-          `https://mainnet.infura.io/v3/eff0770e240c478bac80351b31dd5e97`
+          `https://mainnet.infura.io/v3/a6a041ec814f43d8aef380b4cd8a20df`
         );
       },
       network_id: 1,
       confirmations: 2,
+      skipDryRun: true,
     },
     rinkeby: {
       provider: function () {
@@ -82,6 +83,17 @@ module.exports = {
       },
       network_id: 4,
       confirmations: 2,
+    },
+    goerli: {
+      provider: function () {
+        return new HDWalletProvider(
+          process.env.goerli,
+          "https://goerli.infura.io/v3/3738b7726acd46a286ec9aa2dbdd85b2"
+        );
+      },
+      network_id: 5,
+      confirmations: 2,
+      skipDryRun: true,
     },
   },
 
@@ -110,7 +122,10 @@ module.exports = {
   // Note: if you migrated your contracts prior to enabling this field in your Truffle project and want
   // those previously migrated contracts available in the .db directory, you will need to run the following:
   // $ truffle migrate --reset --compile-all
-
+  plugins: ["truffle-plugin-verify"],
+  api_keys: {
+    etherscan: "BTMDI61WN8KW21P4NB3GKVU6J5XSTVEJ3C",
+  },
   db: {
     enabled: false,
   },

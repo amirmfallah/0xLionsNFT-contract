@@ -5,50 +5,47 @@ const path = require("path");
 require("dotenv").config();
 const ganache = require("ganache");
 
-//*vars
-const MNEMONIC = process.env.MNEMONIC;
-const API_KEY = process.env.NODE_KEY;
+const NFT_CONTRACT_ADDRESS = "0x479E03611EA2dC23f5eF539Dda5392Ce3D86F56D";
+const OWNER_ADDRESS = "0x784392F8A5ed09F97Fd116CFe47FC978fF37bFd7";
 
-const NFT_CONTRACT_ADDRESS = "0x17c39711565c5874344b7b8eccF022373dc6FBed";
-const OWNER_ADDRESS = "0x4e034e28EE16341D5B69634488A44949b6E87c26";
-const MUMBAI = `https://rpc-mumbai.maticvigil.com/v1/${API_KEY}`;
-const MATIC = `https://rpc-mainnet.maticvigil.com/v1/${API_KEY}`;
-const rink = "https://rinkeby.infura.io/v3/eff0770e240c478bac80351b31dd5e97";
+const lionsAddr = "0x450Bc0a99d88a634556A208C9b6B37358705d80A";
 
 //* Remember to
 //*Parse the contract artifact for ABI reference.
-let rawdata = fs.readFileSync(
+let rawdata1 = fs.readFileSync(
+  path.resolve(__dirname, "../build/contracts/Kangaroos.json")
+);
+let contractAbi1 = JSON.parse(rawdata1);
+const NFT_ABI = contractAbi1.abi;
+
+let rawdata2 = fs.readFileSync(
   path.resolve(__dirname, "../build/contracts/XLionsV1.json")
 );
-let contractAbi = JSON.parse(rawdata);
-const NFT_ABI = contractAbi.abi;
+let contractAbi2 = JSON.parse(rawdata2);
+const lionsABI = contractAbi2.abi;
 
 async function main() {
   try {
     //*define web3, contract and wallet instances
     const provider = new HDWalletProvider(
-      "cf2b9e0896e9d112de381922ab4c386e727df7ca9b6fe52f01923d46a555426e",
+      "5368c98d48888aacaf4ff00ee4594ac8b35a36875de370e46210be866b16f7a8",
       "http://127.0.0.1:8545"
     );
     //const provider = new HDWalletProvider(MNEMONIC, rink);
 
     const web3Instance = new web3(provider);
-    const nftContract = new web3Instance.eth.Contract(
+    const nftContractL = new web3Instance.eth.Contract(lionsABI, lionsAddr);
+
+    const nftContractK = new web3Instance.eth.Contract(
       NFT_ABI,
       NFT_CONTRACT_ADDRESS
     );
-    const lastBlock = await web3Instance.eth.getBlock("latest");
-    //console.log(lastBlock);
-    const nonce = await web3Instance.eth.getTransactionCount(
-      OWNER_ADDRESS,
-      "latest"
-    ); //get latest nonce
 
     //the transaction
     const tx = {
       from: OWNER_ADDRESS,
       to: NFT_CONTRACT_ADDRESS,
-      value: "0",
+      value: "20000000000000000",
     };
     //100000000000000000
 
@@ -60,15 +57,45 @@ async function main() {
     //     console.log("minted");
     //   })
     //   .catch((error) => console.log(error));
+    await nftContractL.methods
+      .getApproved(0)
+      .call()
+      .then((res) => {
+        console.log(res);
+        console.log("minted");
+      })
+      .catch((error) => console.log(error));
 
-    // await nftContract.methods
-    //   .mintItem(1)
-    //   .send(tx)
-    //   .then((res) => {
-    //     console.log(res);
-    //     console.log("minted");
-    //   })
-    //   .catch((error) => console.log(error));
+    await nftContractL.methods
+      .mintItem(1)
+      .send(tx)
+      .then((res) => {
+        console.log(res.events);
+        console.log("minted");
+      })
+      .catch((error) => console.log(error));
+
+    await nftContractL.methods
+      .setApprovalForAll(NFT_CONTRACT_ADDRESS, true)
+      .send({
+        from: OWNER_ADDRESS,
+        to: lionsAddr,
+        value: "0",
+      })
+      .then((res) => {
+        console.log(res.events);
+        console.log("approved");
+      })
+      .catch((error) => console.log(error));
+
+    await nftContractK.methods
+      .mintItem(1, lionsAddr, 0)
+      .send(tx)
+      .then((res) => {
+        console.log(res);
+        console.log("minted");
+      })
+      .catch((error) => console.log(error));
 
     // await nftContract.methods
     //   .setMaxInTRX(1000)
@@ -88,14 +115,14 @@ async function main() {
     //   })
     //   .catch((error) => console.log(error));
 
-    await nftContract.methods
-      .withdraw()
-      .send(tx)
-      .then((res) => {
-        console.log(res);
-        console.log("minted");
-      })
-      .catch((error) => console.log(error));
+    // await nftContract.methods
+    //   .withdraw()
+    //   .send(tx)
+    //   .then((res) => {
+    //     console.log(res);
+    //     console.log("minted");
+    //   })
+    //   .catch((error) => console.log(error));
 
     // console.log(
     //   await web3Instance.eth.getBalance(
